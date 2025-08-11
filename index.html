@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Pattern Analysis Engine</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 50%, #34495e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 15px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 2px solid #d4af37;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            color: #d4af37;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .main-content {
+            padding: 40px;
+            background: linear-gradient(145deg, #34495e, #2c3e50);
+        }
+
+        .analysis-section {
+            background: linear-gradient(145deg, #f8f9fa, #ffffff);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            border: 1px solid #d4af37;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+        }
+
+        .input-area {
+            margin-bottom: 30px;
+        }
+
+        .demo-selectors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Crimson Text', serif;
+            background: #ffffff;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: #ffffff;
+            border: 2px solid #27ae60;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Cinzel', serif;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            border-color: #8e44ad;
+        }
+
+        .btn-analyze:hover {
+            box-shadow: 0 8px 25px rgba(142, 68, 173, 0.3);
+        }
+
+        .analysis-results {
+            background: linear-gradient(145deg, #e8f5e8, #f0fff4);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px solid #27ae60;
+            display: none;
+        }
+
+        .pattern-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #d4af37;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .pattern-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .pattern-indicators {
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        .pattern-recommendation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-style: italic;
+            color: #555;
+        }
+
+        .severity-high { border-left-color: #e74c3c; }
+        .severity-medium { border-left-color: #f39c12; }
+        .severity-low { border-left-color: #27ae60; }
+
+        .upload-area {
+            border: 3px dashed #d4af37;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(212, 175, 55, 0.05);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>五行分析引擎</h1>
+            <h2 style="font-family: 'Cinzel', serif; font-size: 1.8rem; margin: 10px 0;">Five Element Analysis Engine</h2>
+            <p>Traditional Chinese Medicine Pattern Recognition System</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Method 1: Manual Input for Testing -->
+            <div class="analysis-section">
+                <h3 class="section-title">🔍 Pattern Analysis Demo</h3>
+                <p style="margin-bottom: 25px; font-style: italic;">Test the analysis engine by selecting diagnostic indicators:</p>
+                
+                <div class="demo-selectors">
+                    <div>
+                        <label for="demoTongueBody">Tongue Body Color:</label>
+                        <select id="demoTongueBody" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Pale">Pale</option>
+                            <option value="Red">Red</option>
+                            <option value="Deep Red">Deep Red</option>
+                            <option value="Purple">Purple</option>
+                            <option value="Normal Pink">Normal Pink</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="demoTongueTexture">Tongue Texture:</label>
+                        <select id="demoTongueTexture" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Swollen">Swollen</option>
+                            <option value="Swollen Scalloped">Swollen with Scalloped Edges</option>
+                            <option value="Thin">Thin</option>
+                            <option value="Cracked">Cracked</option>
+                            <option value="Normal">Normal</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="demoTongueMovement">Tongue Movement:</label>
+                        <select id="demoTongueMovement" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Quivering">Quivering</option>
+                            <option value="Flaccid">Flaccid</option>
+                            <option value="Stiff">Stiff</option>
+                            <option value="Deviated">Deviated</option>
+                            <option value="Normal">Normal</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="demoPulse">Primary Pulse Quality:</label>
+                        <select id="demoPulse" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Empty">Empty (Xu Mai)</option>
+                            <option value="Weak">Weak (Ruo Mai)</option>
+                            <option value="Tight">Tight (Jin Mai)</option>
+                            <option value="Rapid">Rapid (Shu Mai)</option>
+                            <option value="Slow">Slow (Chi Mai)</option>
+                            <option value="Floating">Floating (Fu Mai)</option>
+                            <option value="Deep">Deep (Chen Mai)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="demoSymptoms">Primary Symptom:</label>
+                        <select id="demoSymptoms" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Planning/Action">Procrastination/Decision Issues</option>
+                            <option value="Anxiety/Insecurity">Anxiety/Feeling Insecure</option>
+                            <option value="Letting Go">Can't Let Go/Move On</option>
+                            <option value="Grief/Inspiration">Grief/Breathing Issues</option>
+                            <option value="Essence/Will">Low Energy/Motivation</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="demoConstitution">Constitutional Type:</label>
+                        <select id="demoConstitution" onchange="updateAnalysis()">
+                            <option value="">Select...</option>
+                            <option value="Wood">Wood (Liver/Gallbladder)</option>
+                            <option value="Fire">Fire (Heart/Small Intestine)</option>
+                            <option value="Earth">Earth (Spleen/Stomach)</option>
+                            <option value="Metal">Metal (Lung/Large Intestine)</option>
+                            <option value="Water">Water (Kidney/Bladder)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-analyze" onclick="runCompleteAnalysis()">🧠 Analyze Patterns</button>
+                <button class="btn" onclick="clearDemo()">🔄 Clear All</button>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="analysis-results" id="analysisResults">
+                <h3 style="color: #27ae60; margin-bottom: 20px; font-family: 'Cinzel', serif;">Pattern Analysis Results</h3>
+                <div id="patternsList"></div>
+            </div>
+
+            <!-- Method 2: Import Data -->
+            <div class="analysis-section">
+                <h3 class="section-title">📊 Import Session Data</h3>
+                <div class="upload-area">
+                    <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                        <strong>Import CSV from your Acupuncture Tracker</strong>
+                    </p>
+                    <input type="file" id="csvUpload" accept=".csv" style="margin-bottom: 15px;">
+                    <br>
+                    <button class="btn" onclick="analyzeCsvData()">📈 Analyze Uploaded Data</button>
+                </div>
+                <div id="csvAnalysisResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TCM Diagnostic Knowledge Base
+        const tcmKnowledge = {
+            tongueBody: {
+                'Pale': {
+                    pattern: 'Qi/Blood Deficiency',
+                    severity: 'medium',
+                    element: 'Multiple',
+                    symptoms: ['fatigue', 'dizziness', 'weakness', 'poor circulation'],
+                    recommendations: 'Tonify Qi and Blood, nourish essence'
+                },
+                'Red': {
+                    pattern: 'Heat/Inflammation', 
+                    severity: 'medium',
+                    element: 'Fire',
+                    symptoms: ['emotional stress', 'inflammation', 'agitation'],
+                    recommendations: 'Clear heat, calm spirit'
+                },
+                'Deep Red': {
+                    pattern: 'Severe Heat/Blood Stagnation',
+                    severity: 'high',
+                    element: 'Fire',
+                    symptoms: ['severe inflammation', 'high stress', 'anger'],
+                    recommendations: 'Emergency cooling, address root heat cause'
+                },
+                'Purple': {
+                    pattern: 'Blood Stagnation',
+                    severity: 'medium',
+                    element: 'Multiple',
+                    symptoms: ['pain', 'poor circulation', 'chronic stress'],
+                    recommendations: 'Move blood, resolve stagnation'
+                }
+            },
+
+            tongueTexture: {
+                'Swollen': {
+                    pattern: 'Dampness/Qi Deficiency',
+                    severity: 'medium',
+                    element: 'Earth',
+                    symptoms: ['digestive sluggishness', 'bloating', 'heaviness'],
+                    recommendations: 'Drain dampness, strengthen Spleen Qi'
+                },
+                'Swollen Scalloped': {
+                    pattern: 'Severe Qi Deficiency with Dampness',
+                    severity: 'high',
+                    element: 'Earth',
+                    symptoms: ['metabolic slowness', 'chronic fatigue', 'weight issues'],
+                    recommendations: 'Strongly tonify Spleen Qi, resolve dampness'
+                },
+                'Thin': {
+                    pattern: 'Blood/Yin Deficiency',
+                    severity: 'medium',
+                    element: 'Multiple',
+                    symptoms: ['dry skin', 'weakness', 'pale complexion'],
+                    recommendations: 'Nourish Blood and Yin'
+                },
+                'Cracked': {
+                    pattern: 'Yin Deficiency',
+                    severity: 'medium',
+                    element: 'Water/Multiple',
+                    symptoms: ['dryness', 'night sweats', 'hot flashes', 'restlessness'],
+                    recommendations: 'Nourish Yin, cool internal heat'
+                }
+            },
+
+            tongueMovement: {
+                'Quivering': {
+                    pattern: 'Qi Deficiency/Anxiety',
+                    severity: 'medium',
+                    element: 'Earth/Fire',
+                    symptoms: ['internal stress', 'fatigue', 'anxiety', 'nervous system imbalance'],
+                    recommendations: 'Calm spirit, tonify Qi'
+                },
+                'Flaccid': {
+                    pattern: 'Severe Qi/Blood Deficiency',
+                    severity: 'high',
+                    element: 'Multiple',
+                    symptoms: ['extreme fatigue', 'weakness', 'malnourishment'],
+                    recommendations: 'Emergency tonification of Qi and Blood'
+                },
+                'Stiff': {
+                    pattern: 'Internal Wind/Blood Stagnation',
+                    severity: 'high',
+                    element: 'Wood',
+                    symptoms: ['neurological issues', 'circulatory blockages'],
+                    recommendations: 'Extinguish wind, move blood'
+                },
+                'Deviated': {
+                    pattern: 'Internal Wind',
+                    severity: 'high',
+                    element: 'Wood',
+                    symptoms: ['neurological dysfunction', 'stroke patterns'],
+                    recommendations: 'Urgent wind extinguishing treatment'
+                }
+            },
+
+            pulseQualities: {
+                'Empty': {
+                    pattern: 'Qi/Blood Deficiency',
+                    severity: 'medium',
+                    element: 'Multiple',
+                    symptoms: ['weakness', 'fatigue', 'low vitality'],
+                    recommendations: 'Tonify Qi and Blood'
+                },
+                'Weak': {
+                    pattern: 'Severe Deficiency',
+                    severity: 'high',
+                    element: 'Multiple',
+                    symptoms: ['chronic weakness', 'poor constitution'],
+                    recommendations: 'Strong tonification needed'
+                },
+                'Tight': {
+                    pattern: 'Qi Stagnation/Stress',
+                    severity: 'medium',
+                    element: 'Wood',
+                    symptoms: ['tension', 'stress', 'emotional blockage'],
+                    recommendations: 'Move Qi, resolve stagnation'
+                },
+                'Rapid': {
+                    pattern: 'Heat/Yang Excess',
+                    severity: 'medium',
+                    element: 'Fire',
+                    symptoms: ['anxiety', 'inflammation', 'agitation'],
+                    recommendations: 'Clear heat, calm yang'
+                },
+                'Slow': {
+                    pattern: 'Cold/Yang Deficiency',
+                    severity: 'medium',
+                    element: 'Water',
+                    symptoms: ['cold constitution', 'sluggish metabolism'],
+                    recommendations: 'Warm yang, strengthen kidney fire'
+                }
+            },
+
+            symptoms: {
+                'Planning/Action': {
+                    pattern: 'Liver Qi Stagnation',
+                    severity: 'medium',
+                    element: 'Wood',
+                    organ: 'Liver',
+                    recommendations: 'Move Liver Qi, reduce stress'
+                },
+                'Anxiety/Insecurity': {
+                    pattern: 'Heart/Kidney Disharmony',
+                    severity: 'medium',
+                    element: 'Fire/Water',
+                    organ: 'Heart',
+                    recommendations: 'Calm spirit, strengthen Heart Qi'
+                },
+                'Letting Go': {
+                    pattern: 'Lung Qi Deficiency/Grief',
+                    severity: 'medium',
+                    element: 'Metal',
+                    organ: 'Large Intestine',
+                    recommendations: 'Strengthen Lung Qi, process grief'
+                },
+                'Grief/Inspiration': {
+                    pattern: 'Lung/Metal Element Imbalance',
+                    severity: 'medium',
+                    element: 'Metal',
+                    organ: 'Lung',
+                    recommendations: 'Nourish Lung Yin, process emotions'
+                },
+                'Essence/Will': {
+                    pattern: 'Kidney Essence Deficiency',
+                    severity: 'high',
+                    element: 'Water',
+                    organ: 'Kidney',
+                    recommendations: 'Tonify Kidney essence, strengthen will'
+                }
+            }
+        };
+
+        function updateAnalysis() {
+            // Real-time pattern detection as user selects options
+            const results = analyzeCurrentSelections();
+            if (results.length > 0) {
+                displayQuickResults(results);
+            }
+        }
+
+        function analyzeCurrentSelections() {
+            const patterns = [];
+            
+            // Get current selections
+            const tongueBody = document.getElementById('demoTongueBody').value;
+            const tongueTexture = document.getElementById('demoTongueTexture').value;
+            const tongueMovement = document.getElementById('demoTongueMovement').value;
+            const pulse = document.getElementById('demoPulse').value;
+            const symptom = document.getElementById('demoSymptoms').value;
+            const constitution = document.getElementById('demoConstitution').value;
+
+            // Analyze each indicator
+            if (tongueBody && tcmKnowledge.tongueBody[tongueBody]) {
+                patterns.push({
+                    source: 'Tongue Body',
+                    indicator: tongueBody,
+                    ...tcmKnowledge.tongueBody[tongueBody]
+                });
+            }
+
+            if (tongueTexture && tcmKnowledge.tongueTexture[tongueTexture]) {
+                patterns.push({
+                    source: 'Tongue Texture', 
+                    indicator: tongueTexture,
+                    ...tcmKnowledge.tongueTexture[tongueTexture]
+                });
+            }
+
+            if (tongueMovement && tcmKnowledge.tongueMovement[tongueMovement]) {
+                patterns.push({
+                    source: 'Tongue Movement',
+                    indicator: tongueMovement,
+                    ...tcmKnowledge.tongueMovement[tongueMovement]
+                });
+            }
+
+            if (pulse && tcmKnowledge.pulseQualities[pulse]) {
+                patterns.push({
+                    source: 'Pulse Quality',
+                    indicator: pulse,
+                    ...tcmKnowledge.pulseQualities[pulse]
+                });
+            }
+
+            if (symptom && tcmKnowledge.symptoms[symptom]) {
+                patterns.push({
+                    source: 'Primary Symptom',
+                    indicator: symptom,
+                    ...tcmKnowledge.symptoms[symptom]
+                });
+            }
+
+            return patterns;
+        }
+
+        function runCompleteAnalysis() {
+            const patterns = analyzeCurrentSelections();
+            
+            if (patterns.length === 0) {
+                alert('Please select some diagnostic indicators to analyze.');
+                return;
+            }
+
+            // Cross-reference patterns for deeper insights
+            const crossReferencedPatterns = findPatternConnections(patterns);
+            
+            document.getElementById('analysisResults').style.display = 'block';
+            displayDetailedResults(crossReferencedPatterns);
+        }
+
+        function findPatternConnections(patterns) {
+            // Group patterns by similarity
+            const patternGroups = {};
+            const elementCounts = {};
+            
+            patterns.forEach(pattern => {
+                // Count element frequencies
+                if (pattern.element !== 'Multiple') {
+                    elementCounts[pattern.element] = (elementCounts[pattern.element] || 0) + 1;
+                }
+                
+                // Group similar patterns
+                const key = pattern.pattern;
+                if (!patternGroups[key]) {
+                    patternGroups[key] = {
+                        pattern: pattern.pattern,
+                        indicators: [],
+                        severity: pattern.severity,
+                        elements: new Set(),
+                        recommendations: pattern.recommendations
+                    };
+                }
+                
+                patternGroups[key].indicators.push(`${pattern.source}: ${pattern.indicator}`);
+                patternGroups[key].elements.add(pattern.element);
+                
+                // Upgrade severity if multiple indicators point to same pattern
+                if (patternGroups[key].indicators.length > 1) {
+                    patternGroups[key].severity = 'high';
+                }
+            });
+
+            // Add constitutional analysis
+            const constitution = document.getElementById('demoConstitution').value;
+            if (constitution && elementCounts[constitution]) {
+                patternGroups['Constitutional Confirmation'] = {
+                    pattern: `${constitution} Element Constitutional Pattern Confirmed`,
+                    indicators: [`${elementCounts[constitution]} indicators align with ${constitution} constitution`],
+                    severity: 'low',
+                    elements: new Set([constitution]),
+                    recommendations: `Treatment should focus on ${constitution} element balance`
+                };
+            }
+
+            return Object.values(patternGroups);
+        }
+
+        function displayDetailedResults(patterns) {
+            const patternsList = document.getElementById('patternsList');
+            let html = '';
+
+            patterns.forEach(pattern => {
+                const elementsArray = Array.from(pattern.elements);
+                const severityClass = `severity-${pattern.severity}`;
+                
+                html += `
+                    <div class="pattern-card ${severityClass}">
+                        <div class="pattern-title">${pattern.pattern}</div>
+                        <div class="pattern-indicators">
+                            <strong>Supporting Evidence:</strong><br>
+                            ${pattern.indicators.map(ind => `• ${ind}`).join('<br>')}
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Element(s) Involved:</strong> ${elementsArray.join(', ')}
+                        </div>
+                        <div class="pattern-recommendation">
+                            <strong>Treatment Approach:</strong> ${pattern.recommendations}
+                        </div>
+                    </div>
+                `;
+            });
+
+            patternsList.innerHTML = html;
+            
+            // Scroll to results
+            document.getElementById('analysisResults').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function displayQuickResults(patterns) {
+            // Could add a quick preview area here
+        }
+
+        function clearDemo() {
+            document.getElementById('demoTongueBody').value = '';
+            document.getElementById('demoTongueTexture').value = '';
+            document.getElementById('demoTongueMovement').value = '';
+            document.getElementById('demoPulse').value = '';
+            document.getElementById('demoSymptoms').value = '';
+            document.getElementById('demoConstitution').value = '';
+            document.getElementById('analysisResults').style.display = 'none';
+        }
+
+        function analyzeCsvData() {
+            const fileInput = document.getElementById('csvUpload');
+            if (!fileInput.files.length) {
+                alert('Please select a CSV file first');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const csvText = e.target.result;
+                const sessions = parseCSV(csvText);
+                const analysisResults = analyzeSessions(sessions);
+                displayCsvAnalysis(analysisResults);
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const sessions = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+                    const session = {};
+                    headers.forEach((header, index) => {
+                        session[header] = values[index] || '';
+                    });
+                    sessions.push(session);
+                }
+            }
+            
+            return sessions;
+        }
+
+        function analyzeSessions(sessions) {
+            const analysis = {
+                totalSessions: sessions.length,
+                patternFrequency: {},
+                trends: {},
+                recommendations: []
+            };
+
+            sessions.forEach(session => {
+                // Analyze each session using our knowledge base
+                const sessionPatterns = [];
+                
+                // Check tongue patterns
+                if (session['Tongue Body Color'] && tcmKnowledge.tongueBody[session['Tongue Body Color']]) {
+                    sessionPatterns.push(tcmKnowledge.tongueBody[session['Tongue Body Color']].pattern);
+                }
+                
+                // Count pattern frequencies
+                sessionPatterns.forEach(pattern => {
+                    analysis.patternFrequency[pattern] = (analysis.patternFrequency[pattern] || 0) + 1;
+                });
+            });
+
+            return analysis;
+        }
+
+        function displayCsvAnalysis(analysis) {
+            const resultsDiv = document.getElementById('csvAnalysisResults');
+            
+            let html = `
+                <div style="background: #f0fff4; padding: 25px; border-radius: 12px; margin-top: 20px; border: 2px solid #27ae60;">
+                    <h4 style="color: #27ae60; margin-bottom: 15px;">CSV Analysis Results</h4>
+                    <p><strong>Total Sessions Analyzed:</strong> ${analysis.totalSessions}</p>
+                    <h5 style="margin: 15px 0 10px 0;">Most Common Patterns:</h5>
+                    <ul style="margin-left: 20px;">
+            `;
+            
+            Object.entries(analysis.patternFrequency)
+                .sort(([,a], [,b]) => b - a)
+                .forEach(([pattern, count]) => {
+                    const percentage = ((count / analysis.totalSessions) * 100).toFixed(1);
+                    html += `<li><strong>${pattern}:</strong> ${count} sessions (${percentage}%)</li>`;
+                });
+            
+            html += `
+                    </ul>
+                    <p style="margin-top: 15px; font-style: italic;">This shows your most frequent constitutional patterns over time.</p>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Initialize with Wood constitution selected (user's constitutional type)
+        window.onload = function() {
+            document.getElementById('demoConstitution').value = 'Wood';
+        };
+    </script>
+</body>
+</html>
